@@ -5,7 +5,7 @@ import com.shapegames.weatherapi.exception.WeatherApiException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
@@ -75,8 +75,9 @@ class WeatherService(
             .filter { it.dtTxt.startsWith(tomorrowStr) }
             .minByOrNull {
                 // Get the forecast closest to noon for more accurate daily temperature
+                // example for dtTxt: 2023-10-05 12:00:00
                 val time = it.dtTxt.substring(11, 16)
-                kotlin.math.abs(time.replace(":", "").toInt() - 1200)
+                kotlin.math.abs(LocalTime.parse(time).toSecondOfDay() - LocalTime.NOON.toSecondOfDay())
             }
     }
 
@@ -87,7 +88,7 @@ class WeatherService(
                 // Take the forecast closest to noon for each day
                 val midDayForecast = forecasts.minBy {
                     val time = it.dtTxt.substring(11, 16)
-                    kotlin.math.abs(time.replace(":", "").toInt() - 1200)
+                    kotlin.math.abs(LocalTime.parse(time).toSecondOfDay() - LocalTime.NOON.toSecondOfDay())
                 }
 
                 DayForecast(

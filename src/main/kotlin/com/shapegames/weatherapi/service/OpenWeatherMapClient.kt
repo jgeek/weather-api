@@ -4,16 +4,13 @@ import com.shapegames.weatherapi.config.WeatherApiProperties
 import com.shapegames.weatherapi.dto.OpenWeatherForecastResponse
 import com.shapegames.weatherapi.exception.RateLimitExceededException
 import com.shapegames.weatherapi.exception.WeatherApiException
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
 import java.time.Duration
 
-@Slf4j
 @Service
 class OpenWeatherMapClient(
     private val webClient: WebClient,
@@ -40,7 +37,6 @@ class OpenWeatherMapClient(
                         .build()
                 }
                 .retrieve()
-                // print response body
                 .bodyToMono(OpenWeatherForecastResponse::class.java)
                 .timeout(Duration.ofMillis(5000))
                 .doOnNext {

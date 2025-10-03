@@ -32,7 +32,7 @@ class SwaggerConfig {
             )
             .addServersItem(
                 Server()
-                    .url("http://localhost:8082")
+                    .url("http://localhost:8080")
                     .description("Development server")
             )
     }

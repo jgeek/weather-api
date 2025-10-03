@@ -10,13 +10,16 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.*
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/weather")
 @Tag(name = "Weather API", description = "Rate-limited weather data integration layer")
+@Validated
 class WeatherController(private val weatherService: WeatherService) {
 
     private val logger = LoggerFactory.getLogger(WeatherController::class.java)
@@ -52,46 +55,33 @@ class WeatherController(private val weatherService: WeatherService) {
             example = "celsius",
             required = false
         )
-        @RequestParam(defaultValue = "celsius") unit: String,
+        @RequestParam(defaultValue = "celsius")
+        @Pattern(regexp = "^(celsius|fahrenheit)$", message = "Unit must be either 'celsius' or 'fahrenheit'")
+        unit: String,
 
         @Parameter(
             description = "Minimum temperature threshold",
             example = "24",
             required = true
         )
-        @RequestParam temperature: Int,
+        @RequestParam
+        @Min(value = -100, message = "Temperature must be at least -100")
+        @Max(value = 100, message = "Temperature must be at most 100")
+        temperature: Int,
 
         @Parameter(
             description = "Comma-separated list of location IDs",
-            example = "2345,1456,7653",
+            example = "2988507,2643743,2950159,2618425",
             required = true
         )
-        @RequestParam locations: String
+        @RequestParam
+        @NotBlank(message = "Locations parameter cannot be blank")
+        @Pattern(regexp = "^\\d+(,\\s*\\d+)*$", message = "Locations must be comma-separated numeric IDs")
+        locations: String
     ): ResponseEntity<WeatherSummaryResponse> {
         logger.info("Received request for weather summary: unit=$unit, temperature=$temperature, locations=$locations")
 
-        if (unit !in listOf("celsius", "fahrenheit")) {
-            logger.warn("Invalid temperature unit: $unit")
-            return ResponseEntity.badRequest().build()
-        }
-
-        if (locations.isBlank()) {
-            logger.warn("Empty locations provided")
-            return ResponseEntity.badRequest().build()
-        }
-
-        val locationIds = try {
-            locations.split(",").map { it.trim() }.filter { it.isNotBlank() }
-        } catch (e: Exception) {
-            logger.warn("Invalid location IDs format: $locations")
-            return ResponseEntity.badRequest().build()
-        }
-
-        if (locationIds.isEmpty()) {
-            logger.warn("No valid location IDs provided")
-            return ResponseEntity.badRequest().build()
-        }
-
+        val locationIds = locations.split(",").map { it.trim() }.filter { it.isNotBlank() }
         val response = weatherService.getWeatherSummary(locationIds, temperature, unit)
         return ResponseEntity.ok(response)
     }
@@ -129,29 +119,24 @@ class WeatherController(private val weatherService: WeatherService) {
     fun getLocationForecast(
         @Parameter(
             description = "Location ID to get forecast for",
-            example = "2345",
+            example = "2618425",
             required = true
         )
-        @PathVariable locationId: String,
+        @PathVariable
+        @NotBlank(message = "Location ID cannot be blank")
+        @Pattern(regexp = "^\\d+$", message = "Location ID must be numeric")
+        locationId: String,
 
         @Parameter(
             description = "Temperature unit (celsius or fahrenheit)",
             example = "celsius",
             required = false
         )
-        @RequestParam(defaultValue = "celsius") unit: String = "celsius"
+        @RequestParam(defaultValue = "celsius")
+        @Pattern(regexp = "^(celsius|fahrenheit)$", message = "Unit must be either 'celsius' or 'fahrenheit'")
+        unit: String = "celsius"
     ): ResponseEntity<LocationForecastResponse> {
         logger.info("Received request for location forecast: locationId=$locationId, unit=$unit")
-
-        if (locationId.isBlank()) {
-            logger.warn("Empty location ID provided")
-            return ResponseEntity.badRequest().build()
-        }
-
-        if (unit !in listOf("celsius", "fahrenheit")) {
-            logger.warn("Invalid temperature unit: $unit")
-            return ResponseEntity.badRequest().build()
-        }
 
         val response = weatherService.getLocationForecast(locationId, unit)
         return ResponseEntity.ok(response)

@@ -2,9 +2,11 @@ package com.shapegames.weatherapi.controller
 
 import com.shapegames.weatherapi.exception.RateLimitExceededException
 import com.shapegames.weatherapi.exception.WeatherApiException
+import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
@@ -49,5 +51,23 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred"))
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+        logger.warn("Validation constraint violation: ${ex.message}")
+        val message = ex.constraintViolations.joinToString("; ") { "${it.propertyPath}: ${it.message}" }
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse("VALIDATION_ERROR", message))
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleMethodArgumentNotValidException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        logger.warn("Method argument validation error: ${ex.message}")
+        val message = ex.bindingResult.fieldErrors.joinToString("; ") { "${it.field}: ${it.defaultMessage}" }
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse("VALIDATION_ERROR", message))
     }
 }
