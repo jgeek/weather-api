@@ -56,6 +56,7 @@ class WeatherController(private val weatherService: WeatherService) {
             required = false
         )
         @RequestParam(defaultValue = "celsius")
+        @NotBlank(message = "Unit parameter cannot be blank")
         @Pattern(regexp = "^(celsius|fahrenheit)$", message = "Unit must be either 'celsius' or 'fahrenheit'")
         unit: String,
 
@@ -133,6 +134,7 @@ class WeatherController(private val weatherService: WeatherService) {
             required = false
         )
         @RequestParam(defaultValue = "celsius")
+        @NotBlank(message = "Unit parameter cannot be blank")
         @Pattern(regexp = "^(celsius|fahrenheit)$", message = "Unit must be either 'celsius' or 'fahrenheit'")
         unit: String = "celsius"
     ): ResponseEntity<LocationForecastResponse> {
