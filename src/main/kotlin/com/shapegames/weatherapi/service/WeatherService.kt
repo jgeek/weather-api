@@ -8,6 +8,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
+import kotlinx.coroutines.*
 
 @Service
 class WeatherService(
@@ -23,27 +24,31 @@ class WeatherService(
     ): WeatherSummaryResponse {
         logger.info("Getting weather summary for ${locationIds.size} locations with threshold $temperatureThreshold°$unit")
 
-        val locationSummaries = locationIds.mapNotNull { locationId ->
-            try {
-                val forecast = openWeatherMapClient.getForecast(locationId)
-                val tomorrowForecast = getTomorrowTemperature(forecast)
+        val locationSummaries = runBlocking {
+            locationIds.map { locationId ->
+                async(Dispatchers.IO) {
+                    try {
+                        val forecast = openWeatherMapClient.getForecast(locationId)
+                        val tomorrowForecast = getTomorrowTemperature(forecast)
 
-                if (tomorrowForecast != null) {
-                    val temperature = convertTemperature(tomorrowForecast.main.temp, unit)
-                    LocationSummary(
-                        locationId = locationId,
-                        locationName = forecast.city.name,
-                        tomorrowTemperature = temperature,
-                        willExceedThreshold = temperature > temperatureThreshold
-                    )
-                } else {
-                    logger.warn("No tomorrow forecast available for location: $locationId")
-                    null
+                        if (tomorrowForecast != null) {
+                            val temperature = convertTemperature(tomorrowForecast.main.temp, unit)
+                            LocationSummary(
+                                locationId = locationId,
+                                locationName = forecast.city.name,
+                                tomorrowTemperature = temperature,
+                                willExceedThreshold = temperature > temperatureThreshold
+                            )
+                        } else {
+                            logger.warn("No tomorrow forecast available for location: $locationId")
+                            null
+                        }
+                    } catch (ex: Exception) {
+                        logger.error("Failed to get weather for location: $locationId", ex)
+                        null
+                    }
                 }
-            } catch (ex: Exception) {
-                logger.error("Failed to get weather for location: $locationId", ex)
-                null
-            }
+            }.awaitAll().filterNotNull()
         }
 
         return WeatherSummaryResponse(
