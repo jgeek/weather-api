@@ -10,7 +10,7 @@ class WeatherApiPropertiesTest {
         // Given
         val key = "test-api-key"
         val baseUrl = "https://api.openweathermap.org/data/2.5"
-        val rateLimit = WeatherApiProperties.RateLimit(1000, 60)
+        val rateLimit = WeatherApiProperties.RateLimit(1000, 100)
 
         // When
         val properties = WeatherApiProperties(key, baseUrl, rateLimit)
@@ -25,21 +25,23 @@ class WeatherApiPropertiesTest {
     fun `RateLimit creates instance with correct values`() {
         // Given
         val requestsPerDay = 1000
-        val windowMinutes = 60
+        val requestsPerHour = 100
+        val hourlyWindowMinutes = 60
+        val dailyWindowMinutes = 1440
 
         // When
-        val rateLimit = WeatherApiProperties.RateLimit(requestsPerDay, windowMinutes)
+        val rateLimit = WeatherApiProperties.RateLimit(requestsPerDay, requestsPerHour)
 
         // Then
         assertEquals(requestsPerDay, rateLimit.requestsPerDay)
-        assertEquals(windowMinutes, rateLimit.windowMinutes)
+        assertEquals(requestsPerHour, rateLimit.requestsPerHour)
     }
 
     @Test
     fun `WeatherApiProperties data class equality works correctly`() {
         // Given
-        val rateLimit1 = WeatherApiProperties.RateLimit(1000, 60)
-        val rateLimit2 = WeatherApiProperties.RateLimit(1000, 60)
+        val rateLimit1 = WeatherApiProperties.RateLimit(1000, 100)
+        val rateLimit2 = WeatherApiProperties.RateLimit(1000, 100)
         val properties1 = WeatherApiProperties("key", "url", rateLimit1)
         val properties2 = WeatherApiProperties("key", "url", rateLimit2)
 

@@ -1,0 +1,32 @@
+# Test configuration with embedded settings
+spring:
+  application:
+    name: weather-api
+  # Use simple cache manager for testing (no Redis required)
+  cache:
+    type: simple
+
+# OpenWeatherMap API Configuration
+weather:
+  api:
+    key: demo_api_key_replace_with_real_key
+    base-url: https://api.openweathermap.org/data/2.5
+    rate-limit:
+      requests-per-day: 10000
+      requests-per-hour: 700
+  # Cache TTL in seconds (1 hour for weather data)
+  cache:
+    ttl: 3600
+  # HTTP Client Configuration
+  client:
+    timeout: 5000
+
+# Logging
+logging:
+  level:
+    com:
+      shapegames:
+        weatherapi: INFO
+    org:
+      springframework:
+        cache: DEBUG

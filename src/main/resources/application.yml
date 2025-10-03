@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: weather-api
+  # Caching Configuration
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      password: ""
+
+
+# OpenWeatherMap API Configuration
+weather:
+  api:
+    key: ${OPENWEATHER_API_KEY:8b20c33f51bc261eb171e2f49962275d}
+    base-url: https://api.openweathermap.org/data/2.5
+    rate-limit:
+      requests-per-day: 10000
+      requests-per-hour: 700
+  # Cache TTL in seconds (1 hour for weather data)
+  cache:
+    ttl: 3600
+  # HTTP Client Configuration
+  client:
+    timeout: 5000
+
+# Application Configuration
+server:
+  port: 8080
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    tryItOutEnabled: true

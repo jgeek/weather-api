@@ -11,7 +11,7 @@ data class WeatherApiProperties @ConstructorBinding constructor(
 ) {
     data class RateLimit(
         val requestsPerDay: Int,
-        val windowMinutes: Int
+        val requestsPerHour: Int,
     )
 }
 

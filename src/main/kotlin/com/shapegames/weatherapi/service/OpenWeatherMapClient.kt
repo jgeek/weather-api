@@ -15,14 +15,14 @@ import java.time.Duration
 class OpenWeatherMapClient(
     private val webClient: WebClient,
     private val weatherApiProperties: WeatherApiProperties,
-    private val rateLimitService: RateLimitService
+    private val rateLimiter: RateLimiter
 ) {
 
     private val logger = LoggerFactory.getLogger(OpenWeatherMapClient::class.java)
 
     @Cacheable("weather-forecast", key = "#locationId")
     fun getForecast(locationId: String): OpenWeatherForecastResponse {
-        if (!rateLimitService.canMakeRequest()) {
+        if (!rateLimiter.tryConsume()) {
             throw RateLimitExceededException("Daily rate limit exceeded for OpenWeatherMap API")
         }
 
@@ -40,7 +40,6 @@ class OpenWeatherMapClient(
                 .bodyToMono(OpenWeatherForecastResponse::class.java)
                 .timeout(Duration.ofMillis(5000))
                 .doOnNext {
-                    rateLimitService.incrementRequestCount()
                     logger.info("Successfully retrieved forecast for location: $locationId")
                 }
                 .doOnError { error ->
