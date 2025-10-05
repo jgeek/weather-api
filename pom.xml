@@ -142,6 +142,9 @@
                 <configuration>
                     <args>
                         <arg>-Xjsr305=strict</arg>
+<!--                        Added the -java-parameters compiler flag to your pom.xml in the Kotlin Maven plugin configuration.-->
+<!--                        This ensures that parameter names are preserved in the compiled bytecode, which Jackson needs for proper deserialization.-->
+                        <arg>-java-parameters</arg>
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>

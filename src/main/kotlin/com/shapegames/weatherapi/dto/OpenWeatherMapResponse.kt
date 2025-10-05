@@ -5,77 +5,70 @@ import java.io.Serializable
 
 // OpenWeatherMap API response models
 data class OpenWeatherForecastResponse(
-    val cod: String,
-    val message: Int,
-    val cnt: Int,
-    val list: List<ForecastItem>,
-    val city: City
+    @JsonProperty("cod") val cod: String,
+    @JsonProperty("message") val message: Int,
+    @JsonProperty("cnt") val cnt: Int,
+    @JsonProperty("list") val list: List<ForecastItem>,
+    @JsonProperty("city") val city: City
 ) : Serializable
 
 data class ForecastItem(
-    val dt: Long,
-    @JsonProperty("dt_txt")
-    val dtTxt: String,
-    val main: MainWeather,
-    val weather: List<Weather>,
-    val clouds: Clouds,
-    val wind: Wind,
-    val visibility: Int,
-    val pop: Double,
-    val sys: Sys
+    @JsonProperty("dt") val dt: Long,
+    @JsonProperty("dt_txt") val dtTxt: String?,
+    @JsonProperty("main") val main: MainWeather,
+    @JsonProperty("weather") val weather: List<Weather>,
+    @JsonProperty("clouds") val clouds: Clouds,
+    @JsonProperty("wind") val wind: Wind,
+    @JsonProperty("visibility") val visibility: Int?,
+    @JsonProperty("pop") val pop: Double,
+    @JsonProperty("sys") val sys: Sys
 ) : Serializable
 
 data class MainWeather(
-    val temp: Double,
-    @JsonProperty("feels_like")
-    val feelsLike: Double,
-    @JsonProperty("temp_min")
-    val tempMin: Double,
-    @JsonProperty("temp_max")
-    val tempMax: Double,
-    val pressure: Int,
-    @JsonProperty("sea_level")
-    val seaLevel: Int,
-    @JsonProperty("grnd_level")
-    val grndLevel: Int,
-    val humidity: Int,
-    @JsonProperty("temp_kf")
-    val tempKf: Double
+    @JsonProperty("temp") val temp: Double,
+    @JsonProperty("feels_like") val feelsLike: Double,
+    @JsonProperty("temp_min") val tempMin: Double,
+    @JsonProperty("temp_max") val tempMax: Double,
+    @JsonProperty("pressure") val pressure: Int,
+    @JsonProperty("sea_level") val seaLevel: Int?,
+    @JsonProperty("grnd_level") val grndLevel: Int?,
+    @JsonProperty("humidity") val humidity: Int,
+    @JsonProperty("temp_kf") val tempKf: Double?
 ) : Serializable
 
 data class Weather(
-    val id: Int,
-    val main: String,
-    val description: String,
-    val icon: String
+    @JsonProperty("id") val id: Int,
+    @JsonProperty("main") val main: String,
+    @JsonProperty("description") val description: String,
+    @JsonProperty("icon") val icon: String
 ) : Serializable
 
 data class Clouds(
-    val all: Int
+    @JsonProperty("all") val all: Int
 ) : Serializable
 
 data class Wind(
-    val speed: Double,
-    val deg: Int,
-    val gust: Double?
+    @JsonProperty("speed") val speed: Double,
+    @JsonProperty("deg") val deg: Int,
+    @JsonProperty("gust") val gust: Double?
 ) : Serializable
 
 data class Sys(
-    val pod: String
+    @JsonProperty("pod") val pod: String
 ) : Serializable
 
 data class City(
-    val id: Long,
-    val name: String,
-    val coord: Coord,
-    val country: String,
-    val population: Long,
-    val timezone: Int,
-    val sunrise: Long,
-    val sunset: Long
+    @JsonProperty("id") val id: Long,
+    @JsonProperty("name") val name: String,
+    @JsonProperty("coord") val coord: Coord,
+    @JsonProperty("country") val country: String,
+    @JsonProperty("population") val population: Long,
+    @JsonProperty("timezone") val timezone: Int,
+    @JsonProperty("sunrise") val sunrise: Long,
+    @JsonProperty("sunset") val sunset: Long
 ) : Serializable
 
 data class Coord(
-    val lat: Double,
-    val lon: Double
+    @JsonProperty("lat") val lat: Double,
+    @JsonProperty("lon") val lon: Double
 ) : Serializable

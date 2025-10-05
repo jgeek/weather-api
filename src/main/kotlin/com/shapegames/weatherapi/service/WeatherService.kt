@@ -77,22 +77,23 @@ class WeatherService(
         val tomorrowStr = tomorrow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
         return forecast.list
-            .filter { it.dtTxt.startsWith(tomorrowStr) }
+            .filter { it.dtTxt?.startsWith(tomorrowStr) == true }
             .minByOrNull {
                 // Get the forecast closest to noon for more accurate daily temperature
                 // example for dtTxt: 2023-10-05 12:00:00
-                val time = it.dtTxt.substring(11, 16)
+                val time = it.dtTxt?.substring(11, 16) ?: "12:00"
                 kotlin.math.abs(LocalTime.parse(time).toSecondOfDay() - LocalTime.NOON.toSecondOfDay())
             }
     }
 
     private fun groupForecastByDay(forecast: OpenWeatherForecastResponse, unit: String): List<DayForecast> {
         return forecast.list
-            .groupBy { it.dtTxt.substring(0, 10) } // Group by date (YYYY-MM-DD)
+            .filter { it.dtTxt != null } // Filter out items with null dtTxt
+            .groupBy { it.dtTxt!!.substring(0, 10) } // Group by date (YYYY-MM-DD)
             .map { (date, forecasts) ->
                 // Take the forecast closest to noon for each day
                 val midDayForecast = forecasts.minBy {
-                    val time = it.dtTxt.substring(11, 16)
+                    val time = it.dtTxt!!.substring(11, 16)
                     kotlin.math.abs(LocalTime.parse(time).toSecondOfDay() - LocalTime.NOON.toSecondOfDay())
                 }
 
