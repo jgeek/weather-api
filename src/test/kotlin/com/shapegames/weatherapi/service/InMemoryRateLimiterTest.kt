@@ -1,9 +1,14 @@
 package com.shapegames.weatherapi.service
 
 import com.shapegames.weatherapi.config.WeatherApiProperties
+import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.Bucket
+import io.github.bucket4j.BucketConfiguration
+import io.github.bucket4j.Refill
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -67,7 +72,11 @@ class InMemoryRateLimiterTest {
 
         // Verify that both limits are configured by checking available tokens
         // Should be 0 since we've consumed all hourly tokens
-        assertEquals(0, rateLimiter.getAvailableTokens(), "Should have no available tokens after consuming hourly limit")
+        assertEquals(
+            0,
+            rateLimiter.getAvailableTokens(),
+            "Should have no available tokens after consuming hourly limit"
+        )
     }
 
     @Test
@@ -212,5 +221,42 @@ class InMemoryRateLimiterTest {
 
         // Verify interface method works
         assertTrue(rateLimiterInterface.tryConsume(), "Interface method should work correctly")
+    }
+
+
+    @Test
+    fun `hourly refill works with fake time`() {
+        val fakeTime = FakeTimeMeter()
+        val bucket = Bucket.builder()
+            .withCustomTimePrecision(fakeTime)
+            .addLimit(
+                Bandwidth.simple(
+                    5, Duration.ofDays(1)
+                )
+            )
+            .addLimit(
+                Bandwidth.classic(
+                    3, Refill.intervally(
+                        3,
+                        Duration.ofHours(1)
+                    )
+                )
+            ).build()
+
+        // consume all 3
+        assertTrue(bucket.tryConsume(1))
+        assertTrue(bucket.tryConsume(1))
+        assertTrue(bucket.tryConsume(1))
+
+        assertFalse(bucket.tryConsume(1))
+
+        // advance 1h → refill
+        fakeTime.addMillis(60 * 60 * 1000)
+        assertTrue(bucket.tryConsume(1))
+        assertTrue(bucket.tryConsume(1))
+
+        // exceed daily limit
+        assertFalse(bucket.tryConsume(1))
+
     }
 }

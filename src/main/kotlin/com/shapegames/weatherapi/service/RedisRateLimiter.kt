@@ -64,3 +64,4 @@ class RedisRateLimiter(
 
     override fun tryConsume(): Boolean = bucket.tryConsume(1)
 }
+
