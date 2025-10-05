@@ -1,0 +1,13 @@
+# Docker ignore file to reduce build context size
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+*.log
+.DS_Store
+README.md
+HELP.md
+.env
+docker-compose.override.yml
+
